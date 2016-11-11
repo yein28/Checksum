@@ -1,0 +1,60 @@
+apply plugin: 'com.android.model.application'
+
+model{
+    android {
+        compileSdkVersion = 24
+        buildToolsVersion = "24.0.1"
+
+        defaultConfig.with {
+            applicationId = "yein.checksum"
+            minSdkVersion.apiLevel = 19
+            targetSdkVersion.apiLevel = 24
+            versionCode = 1
+            versionName = "1.0"
+        }
+        buildTypes {
+            release {
+                minifyEnabled false
+                proguardFiles.add(file('proguard-android.txt'))
+            }
+            debug{
+                debuggable true
+            }
+        }
+        ndk{
+            moduleName "module-jni"
+            ldLibs.addAll(['android', 'log'])
+            debuggable true
+        }
+        productFlavors{
+            create("arm"){
+                ndk.abiFilters.add("armeabi-v7a")
+            }
+        }
+        sources {
+            main {
+                jni {
+                    dependencies {
+                        library "boringssl" linkage "shared"
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        libs(PrebuiltLibraries){
+            boringssl {
+                headers.srcDir "src/main/jni/openssl"
+                binaries.withType(SharedLibraryBinary){
+                    sharedLibraryFile = file("src/main/jniLibs/lib/libcrypto.so")
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:24.1.1'
+}
